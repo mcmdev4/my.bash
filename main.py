@@ -4,6 +4,8 @@ import time
 import subprocess
 import compactnts as cpn
 import compactcalc as cpc
+import sys
+import shutil
 global uimp
 global params
 
@@ -44,13 +46,13 @@ def App():
         elif uimp.strip().lower().startswith("ls"):
             for item in os.listdir(os.getcwd()):
                 print(item)
-        elif uimp.strip().lower().startswith("mkdirs"):
+        elif uimp.strip().lower().startswith("mkdir"):
             if len(params) > 1:
                 os.makedirs(os.path.join(os.getcwd(), params[1]), exist_ok=True)
                 print(f"Directory '{params[1]}' created.")
             else:
                 print("Please provide a directory name.")
-        elif uimp.strip().lower().startswith("mk"):
+        elif uimp.strip().lower().startswith("mkf"):
             if len(params) > 1:
                 with open(os.path.join(os.getcwd(), params[1]), 'w') as f:
                     pass
@@ -118,6 +120,9 @@ def App():
             cnts - Opens a simple text editor (Compact Notepad).
             calc - Opens a simple calculator (Compact Calculator).
             help - Displays this help message.
+            winano - Opens winano.
+            mv [source] [destination] - Moves a file or directory.
+            cp [source] [destination] - Copies a file or directory.
 
             """)
         elif uimp.strip().lower().startswith("destroy"):
@@ -134,7 +139,49 @@ def App():
                     print(f"Script '{script_path}' not found.")
             else:
                 print("Please provide a script path to run.")
-            
+        elif uimp.strip().lower().startswith("winano"):
+            print("Press control + d + enter [linux, mac] or control + z + enter to finish the file")
+            content = sys.stdin.read()
+
+            with open(os.path.join(os.getcwd(), params[1]), "w") as f:
+                f.write(content)
+                print("Saved successfully")
+        elif uimp.strip().lower().startswith("mv"):
+            if len(params) > 2:
+                src = os.path.join(os.getcwd(), params[1])
+                dst = os.path.join(os.getcwd(), params[2])
+                try:
+                    shutil.move(src, dst)
+                    print(f"Successfully moved '{params[1]}' to '{params[2]}'.")
+                except FileNotFoundError:
+                    print(f"Source path '{params[1]}' not found.")
+                except PermissionError:
+                    print(f"Permission denied to access the path.")
+                except Exception as e:
+                    print(f"Error moving: {e}")
+            else:
+                print("Usage: mv [source] [destination]")
+        elif uimp.strip().lower().startswith("cp"):
+            if len(params) > 2:
+                src = os.path.join(os.getcwd(), params[1])
+                dst = os.path.join(os.getcwd(), params[2])
+                try:
+                    if os.path.isdir(src):
+                        shutil.copytree(src, dst)
+                        print(f"Successfully copied directory '{params[1]}' to '{params[2]}'.")
+                    else:
+                        shutil.copy2(src, dst)
+                        print(f"Successfully copied file '{params[1]}' to '{params[2]}'.")
+                except FileNotFoundError:
+                    print(f"Source path '{params[1]}' not found.")
+                except FileExistsError:
+                    print(f"Destination path '{params[2]}' already exists.")
+                except PermissionError:
+                    print(f"Permission denied to access the path.")
+                except Exception as e:
+                    print(f"Error copying: {e}")
+            else:
+                print("Usage: cp [source] [destination]")
         else:
             print(f"Command '{uimp}' not recognized.")
             continue
